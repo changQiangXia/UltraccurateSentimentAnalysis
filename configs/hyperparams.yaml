@@ -1,0 +1,64 @@
+# 超参数配置
+
+# 模型配置
+model:
+  # 在线模型（国内需要镜像或代理）
+  # name: "hfl/chinese-tinybert-l4-uncased"
+  # 本地模型（已下载）
+  # L4 模型（4层，50MB，适合4GB显存）
+  # name: "./models/chinese-tinybert-l4-uncased"
+  # L6 模型（6层，244MB，精度更高但需要更多显存）
+  # batch_size 已从 80 降到 32 以适应 L6
+  name: "./models/chinese-tinybert-l6-uncased"
+  num_labels: 18  # ASAP 数据集 18 个维度
+  max_length: 128  # Head+Tail 截断后的最大长度
+  hidden_dropout_prob: 0.1
+  attention_probs_dropout_prob: 0.1
+  # 类别加权 Loss（解决 ASAP 数据不平衡问题）
+  use_weighted_loss: true
+  class_weights: [5.0, 1.0, 2.5]  # [负面, 中性, 正面] - 根据数据分布调整
+
+# 训练配置
+training:
+  output_dir: "./checkpoints"
+  # 【脱胎换骨】更多 epochs + early stopping
+  num_train_epochs: 15              # 从 5 提升到 15！
+  early_stopping_patience: 3        # 3 个 epoch 不提升就早停
+  # batch_size（L6 模型需要更多显存，从 80 降到 32）
+  per_device_train_batch_size: 32
+  per_device_eval_batch_size: 64
+  learning_rate: 3.0e-5             # 略微提升学习率
+  weight_decay: 0.01
+  warmup_ratio: 0.1
+  logging_steps: 50
+  eval_steps: 200
+  save_steps: 500
+  save_total_limit: 5               # 保存更多 checkpoint
+  load_best_model_at_end: true
+  metric_for_best_model: "f1_macro"
+  greater_is_better: true
+  fp16: true
+  dataloader_pin_memory: true
+  dataloader_num_workers: 4
+  remove_unused_columns: false
+  # 【脱胎换骨】层 wise 学习率衰减
+  layer_wise_lr_decay: 0.9          # 每层衰减 10%
+
+# R-Drop 配置
+rdrop:
+  enabled: true
+  alpha: 5.0  # R-Drop 损失的权重系数
+
+# 数据配置
+data:
+  train_file: "data/processed/train.jsonl"
+  eval_file: "data/processed/eval.jsonl"
+  num_train_samples: 33165
+  num_eval_samples: 4940
+  head_ratio: 0.6  # Head+Tail 截断中头部占比
+  tail_ratio: 0.4  # Head+Tail 截断中尾部占比
+
+# 量化配置
+quantization:
+  onnx_output_path: "deployments/model.onnx"
+  int8_model_path: "deployments/model_int8.onnx"

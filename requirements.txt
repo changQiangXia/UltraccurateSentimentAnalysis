@@ -1,0 +1,16 @@
+# Python 3.9 - 3.11 推荐
+# ⚠️ torch 需要手动安装 GPU 版本（见 README），不要通过此文件安装
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# torch>=2.0.0
+transformers>=4.30.0
+datasets>=2.12.0
+accelerate>=0.20.0
+scikit-learn>=1.2.0
+numpy>=1.24.0
+tqdm>=4.65.0
+pyyaml>=6.0
+onnx>=1.14.0
+onnxruntime-gpu>=1.15.0
+tensorrt>=8.6.0
+peft>=0.4.0
+pandas>=2.0.0
